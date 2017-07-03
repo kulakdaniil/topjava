@@ -3,11 +3,12 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExceed;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * GKislin
@@ -30,7 +31,33 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExceed>  getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO return filtered list with correctly exceeded field
-        System.out.println("TODO return filtered list with correctly exceeded field");
-        return null;
+        //
+        // http://bazhenov.me/blog/2014/07/20/java-8-top10.html
+        // map.getOrDefault() & map.merge();
+
+        //Превышает ли сумма калорий за день заданного пользователем значения?
+
+        //Формируем справочную карту, суммируем калории за день
+        Map<LocalDate,Integer> dayCaloryMap = new HashMap<>();
+        for (UserMeal userMeal: mealList) {
+            LocalDate localDate = userMeal.getDateTime().toLocalDate();
+            dayCaloryMap.put(localDate, userMeal.getCalories() +
+                            (dayCaloryMap.containsKey(localDate)?dayCaloryMap.get(localDate):0));
+        }
+//        System.out.println(dayCaloryMap);
+
+        //Фильтруем и конвертируем объекты
+        List<UserMealWithExceed> exceedList = new ArrayList<>();
+        for (UserMeal userMeal: mealList) {
+            LocalDate mealDate = userMeal.getDateTime().toLocalDate();
+            if (TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(),startTime,endTime))
+                exceedList.add(new UserMealWithExceed(userMeal.getDateTime(),
+                                                      userMeal.getDescription(),
+                                                      userMeal.getCalories(),
+                                                      (dayCaloryMap.get(mealDate)>caloriesPerDay)?true:false));
+        }
+//        for (UserMealWithExceed userMealWithExceed:exceedList)
+//            System.out.println(userMealWithExceed.toString());
+        return exceedList;
     }
 }
