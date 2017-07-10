@@ -27,26 +27,22 @@ public class UserMealsUtil {
                 new UserMeal(LocalDateTime.of(2015, Month.MAY, 31,20,0), "Ужин", 510)
         );
 
-        getFilteredWithExceededWithoutAll(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
+        getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
 //        .toLocalDate();
 //        .toLocalTime();
     }
 
     public static List<UserMealWithExceed>  getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO return filtered list with correctly exceeded field
-        Predicate<UserMeal> pFilterStartEndTime = e -> TimeUtil.isBetween(e.getDateTime().toLocalTime(),startTime,endTime);
-        BiPredicate<LocalDateTime,Integer> logicExceed =
-                (date,exceed) -> mealList
-                        .stream()
-                        .filter(e -> e.getDateTime().toLocalDate().equals(date.toLocalDate()))
-                        .mapToInt(UserMeal::getCalories).sum() > exceed;
 
-        return mealList.stream().filter(pFilterStartEndTime).
-                map(e -> new UserMealWithExceed(e.getDateTime(),
-                        e.getDescription(),
-                        e.getCalories(),
-                        logicExceed.test(e.getDateTime(),caloriesPerDay)))
-                .collect(Collectors.toList());
+        final Map<LocalDate,Integer> dayCaloryMap = mealList.stream().collect(
+                Collectors.groupingBy(e -> e.getDateTime().toLocalDate(),
+                                      Collectors.summingInt(UserMeal::getCalories)));
+
+        return mealList.parallelStream().filter(e -> TimeUtil.isBetween(e.getDateTime().toLocalTime(),startTime,endTime))
+                       .map(e -> new UserMealWithExceed(e.getDateTime(),e.getDescription(), e.getCalories(),
+                       dayCaloryMap.get(e.getDateTime().toLocalDate())>caloriesPerDay))
+                       .collect(Collectors.toList());
     }
 
     public static List<UserMealWithExceed>  getFilteredWithExceededWithoutAll(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
