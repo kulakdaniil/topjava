@@ -36,10 +36,10 @@ public class UserMealsUtil {
         // TODO return filtered list with correctly exceeded field
         Predicate<UserMeal> pFilterStartEndTime = e -> TimeUtil.isBetween(e.getDateTime().toLocalTime(),startTime,endTime);
         BiPredicate<LocalDateTime,Integer> logicExceed =
-                (date,exceed) -> (mealList
+                (date,exceed) -> mealList
                         .stream()
                         .filter(e -> e.getDateTime().toLocalDate().equals(date.toLocalDate()))
-                        .mapToInt(UserMeal::getCalories).sum() > exceed)?true:false;
+                        .mapToInt(UserMeal::getCalories).sum() > exceed;
 
         return mealList.stream().filter(pFilterStartEndTime).
                 map(e -> new UserMealWithExceed(e.getDateTime(),
@@ -68,7 +68,7 @@ public class UserMealsUtil {
                 exceedList.add(new UserMealWithExceed(userMeal.getDateTime(),
                                                       userMeal.getDescription(),
                                                       userMeal.getCalories(),
-                                                      (dayCaloryMap.get(mealDate)>caloriesPerDay)?true:false));
+                                                      dayCaloryMap.get(mealDate)>caloriesPerDay));
         }
         return exceedList;
     }
