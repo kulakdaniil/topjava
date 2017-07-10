@@ -27,7 +27,7 @@ public class UserMealsUtil {
                 new UserMeal(LocalDateTime.of(2015, Month.MAY, 31,20,0), "Ужин", 510)
         );
 
-        getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
+        getFilteredWithExceededWithoutAll(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
 //        .toLocalDate();
 //        .toLocalTime();
     }
@@ -54,22 +54,16 @@ public class UserMealsUtil {
 
         //Формируем справочную карту, суммируем калории за день
         Map<LocalDate,Integer> dayCaloryMap = new HashMap<>();
-        for (UserMeal userMeal: mealList) {
-            LocalDate localDate = userMeal.getDateTime().toLocalDate();
-            dayCaloryMap.put(localDate, userMeal.getCalories() +
-                            (dayCaloryMap.containsKey(localDate)?dayCaloryMap.get(localDate):0));
-        }
+        for (UserMeal uM: mealList)
+            dayCaloryMap.merge(uM.getDateTime().toLocalDate(), uM.getCalories(), Integer::sum);
 
         //Фильтруем и конвертируем объекты
-        List<UserMealWithExceed> exceedList = new ArrayList<>();
-        for (UserMeal userMeal: mealList) {
-            LocalDate mealDate = userMeal.getDateTime().toLocalDate();
-            if (TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(),startTime,endTime))
-                exceedList.add(new UserMealWithExceed(userMeal.getDateTime(),
-                                                      userMeal.getDescription(),
-                                                      userMeal.getCalories(),
-                                                      dayCaloryMap.get(mealDate)>caloriesPerDay));
-        }
-        return exceedList;
+        List<UserMealWithExceed> exList = new ArrayList<>();
+        for (UserMeal uM: mealList)
+            if (TimeUtil.isBetween(uM.getDateTime().toLocalTime(),startTime,endTime))
+                exList.add(new UserMealWithExceed(uM.getDateTime(),uM.getDescription(),uM.getCalories(),
+                          dayCaloryMap.get(uM.getDateTime().toLocalDate())>caloriesPerDay));
+
+        return exList;
     }
 }
