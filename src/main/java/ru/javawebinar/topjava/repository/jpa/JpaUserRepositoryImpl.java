@@ -8,6 +8,8 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Repository
@@ -29,6 +31,11 @@ public class JpaUserRepositoryImpl implements UserRepository {
     @Override
     @Transactional
     public User save(User user) {
+        ArrayList<String> list = new ArrayList<>();
+        list.re
+        HashMap<String, String> map = new HashMap<>();
+        map.g
+
         if (user.isNew()) {
             em.persist(user);
             return user;
