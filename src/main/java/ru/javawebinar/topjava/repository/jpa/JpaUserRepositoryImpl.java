@@ -31,11 +31,6 @@ public class JpaUserRepositoryImpl implements UserRepository {
     @Override
     @Transactional
     public User save(User user) {
-        ArrayList<String> list = new ArrayList<>();
-        list.re
-        HashMap<String, String> map = new HashMap<>();
-        map.g
-
         if (user.isNew()) {
             em.persist(user);
             return user;
